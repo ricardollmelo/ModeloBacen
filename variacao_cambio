@@ -1,0 +1,32 @@
+# Pacotes necessários
+library(dplyr)
+library(lubridate)
+library(openxlsx)
+
+
+dados <- dados %>%
+  mutate(Date = as.Date(Date, format = "%Y-%m-%d"))
+
+dados <- dados %>%
+  mutate(trimestre = paste0(year(Date), "-Q", quarter(Date)))
+
+media_trimestral <- dados %>%
+  group_by(trimestre) %>%
+  summarise(media_cambio = mean(Dolar, na.rm = TRUE)) %>%
+  ungroup()
+
+media_trimestral <- media_trimestral %>%
+  mutate(variacao = (media_cambio / lag(media_cambio) - 1) * 100)
+
+print(media_trimestral)
+
+plot(media_trimestral$variacao)
+
+
+write.xlsx(
+  media_trimestral,                # Dados processados
+  file = "15.VARIACAO_TRIMESTRAL.xlsx",  # Nome do arquivo
+  rowNames = FALSE                 # Sem colunas de índice
+)
+
+
